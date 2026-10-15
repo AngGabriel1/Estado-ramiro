@@ -59,7 +59,7 @@ fun InicioScreen(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
-    )
+    ) //ola
 }
 
 @Preview(showBackground = true)
