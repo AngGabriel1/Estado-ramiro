@@ -1,3 +1,4 @@
+
 package screens
 
 import androidx.compose.foundation.layout.*
@@ -13,8 +14,11 @@ fun InicioScreen(
     modifier: Modifier = Modifier,
     nombre: String,
     listaNombres: List<String>,
+    nombreModificar: String,
     onNombreChange: (String) -> Unit,
     onAgregar: () -> Unit,
+    onModificar: (String) -> Unit,
+    onGuardarCambios: () -> Unit,
     onEliminar: (String) -> Unit
 ) {
     Column(
@@ -27,9 +31,18 @@ fun InicioScreen(
         )
 
         Button(
-            onClick = onAgregar
+            onClick = {
+                if (nombreModificar == "") {
+                    onAgregar()
+                } else {
+                    onGuardarCambios()
+                }
+            }
         ) {
-            Text("Agregar")
+            Text(
+                if (nombreModificar == "") "Agregar"
+                else "Guardar cambios"
+            )
         }
 
         LazyColumn {
@@ -37,6 +50,9 @@ fun InicioScreen(
                 MiCard(
                     modifier = Modifier.padding(vertical = 4.dp),
                     nombre = itemNombre,
+                    onModificar = {
+                        onModificar(itemNombre)
+                    },
                     onEliminar = {
                         onEliminar(itemNombre)
                     }
