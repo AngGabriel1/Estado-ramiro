@@ -1,3 +1,4 @@
+
 package com.example.estado
 
 import android.os.Bundle
@@ -5,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,27 +25,32 @@ class MainActivity : ComponentActivity() {
             EstadoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    var nombre by rememberSaveable {
+                    var numero1 by rememberSaveable {
                         mutableStateOf("")
                     }
 
-                    val listaNombres = remember {
-                        mutableStateListOf<String>()
+                    var numero2 by rememberSaveable {
+                        mutableStateOf("")
+                    }
+
+                    var resultado by rememberSaveable {
+                        mutableStateOf("")
                     }
 
                     InicioScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),
-                        nombre = nombre,
-                        listaNombres = listaNombres,
-                        onNombreChange = { nombre = it },
-                        onAgregar = {
-                            listaNombres.add(nombre)
-                            nombre = ""
-                        },
-                        onEliminar = {
-                            listaNombres.remove(it)
+                        numero1 = numero1,
+                        numero2 = numero2,
+                        resultado = resultado,
+                        onNumero1Change = { numero1 = it },
+                        onNumero2Change = { numero2 = it },
+                        onSumar = {
+                            resultado = (
+                                    numero1.toDouble() +
+                                            numero2.toDouble()
+                                    ).toString()
                         }
                     )
                 }
@@ -55,7 +60,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun InicioScreen(name: String, modifier: Modifier = Modifier) {
+fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -64,14 +69,16 @@ fun InicioScreen(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun InicioPreview() {
-    InicioScreen(
-        modifier = Modifier.fillMaxWidth(),
-        nombre="",
-        listaNombres = emptyList(),
-        onNombreChange = {},
-        onAgregar = {},
-        onEliminar = {}
-
-    )
+fun GreetingPreview() {
+    EstadoTheme {
+        InicioScreen(
+            modifier = Modifier.fillMaxSize(),
+            numero1 = "",
+            numero2 = "",
+            resultado = "",
+            onNumero1Change = {},
+            onNumero2Change = {},
+            onSumar = {}
+        )
+    }
 }

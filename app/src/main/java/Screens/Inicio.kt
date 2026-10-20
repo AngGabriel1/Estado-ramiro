@@ -1,9 +1,9 @@
 package screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -11,37 +11,37 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun InicioScreen(
     modifier: Modifier = Modifier,
-    nombre: String,
-    listaNombres: List<String>,
-    onNombreChange: (String) -> Unit,
-    onAgregar: () -> Unit,
-    onEliminar: (String) -> Unit
+    numero1: String,
+    numero2: String,
+    resultado: String,
+    onNumero1Change: (String) -> Unit,
+    onNumero2Change: (String) -> Unit,
+    onSumar: () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextField(
-            value = nombre,
-            onValueChange = onNombreChange,
-            label = { Text("Nombre") }
+            value = numero1,
+            onValueChange = onNumero1Change,
+            label = { Text("Primer número") }
+        )
+
+        TextField(
+            value = numero2,
+            onValueChange = onNumero2Change,
+            label = { Text("Segundo número") }
         )
 
         Button(
-            onClick = onAgregar
+            onClick = onSumar
         ) {
-            Text("Agregar")
+            Text("Sumar")
         }
 
-        LazyColumn {
-            items(listaNombres) { itemNombre ->
-                MiCard(
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    nombre = itemNombre,
-                    onEliminar = {
-                        onEliminar(itemNombre)
-                    }
-                )
-            }
-        }
+        Text(
+            text = "Resultado: $resultado"
+        )
     }
 }
