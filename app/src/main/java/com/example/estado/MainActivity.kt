@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,29 +22,44 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EstadoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
 
-                    var nombre by rememberSaveable {
+                    var color by rememberSaveable {
                         mutableStateOf("")
                     }
 
+                    var colorSeleccionado by rememberSaveable {
+                        mutableStateOf("azul")
+                    }
+
                     val listaNombres = remember {
-                        mutableStateListOf<String>()
+                        mutableStateListOf(
+                            "Gabriel",
+                            "Juan",
+                            "María",
+                            "Pedro"
+                        )
                     }
 
                     InicioScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),
-                        nombre = nombre,
+
+                        color = color,
+
+                        colorSeleccionado = colorSeleccionado,
+
                         listaNombres = listaNombres,
-                        onNombreChange = { nombre = it },
-                        onAgregar = {
-                            listaNombres.add(nombre)
-                            nombre = ""
+
+                        onColorChange = {
+                            color = it
                         },
-                        onEliminar = {
-                            listaNombres.remove(it)
+
+                        onCambiarColor = {
+                            colorSeleccionado = color
                         }
                     )
                 }
@@ -55,7 +69,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun InicioScreen(name: String, modifier: Modifier = Modifier) {
+fun Greeting(
+    name: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -64,14 +81,15 @@ fun InicioScreen(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun InicioPreview() {
-    InicioScreen(
-        modifier = Modifier.fillMaxWidth(),
-        nombre="",
-        listaNombres = emptyList(),
-        onNombreChange = {},
-        onAgregar = {},
-        onEliminar = {}
-
-    )
+fun GreetingPreview() {
+    EstadoTheme {
+        InicioScreen(
+            modifier = Modifier.fillMaxSize(),
+            color = "",
+            colorSeleccionado = "azul",
+            listaNombres = emptyList(),
+            onColorChange = {},
+            onCambiarColor = {}
+        )
+    }
 }
