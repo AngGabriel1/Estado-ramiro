@@ -22,44 +22,44 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EstadoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
 
-                    var nombre by rememberSaveable {
+                    var color by rememberSaveable {
                         mutableStateOf("")
                     }
 
-                    var nombreModificar by remember {
-                        mutableStateOf("")
+                    var colorSeleccionado by rememberSaveable {
+                        mutableStateOf("azul")
                     }
 
                     val listaNombres = remember {
-                        mutableStateListOf<String>()
+                        mutableStateListOf(
+                            "Gabriel",
+                            "Juan",
+                            "María",
+                            "Pedro"
+                        )
                     }
 
                     InicioScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),
-                        nombre = nombre,
+
+                        color = color,
+
+                        colorSeleccionado = colorSeleccionado,
+
                         listaNombres = listaNombres,
-                        nombreModificar = nombreModificar,
-                        onNombreChange = { nombre = it },
-                        onAgregar = {
-                            listaNombres.add(nombre)
-                            nombre = ""
+
+                        onColorChange = {
+                            color = it
                         },
-                        onModificar = { nombreSeleccionado ->
-                            nombreModificar = nombreSeleccionado
-                            nombre = nombreSeleccionado
-                        },
-                        onGuardarCambios = {
-                            val posicion = listaNombres.indexOf(nombreModificar)
-                            listaNombres[posicion] = nombre
-                            nombre = ""
-                            nombreModificar = ""
-                        },
-                        onEliminar = {
-                            listaNombres.remove(it)
+
+                        onCambiarColor = {
+                            colorSeleccionado = color
                         }
                     )
                 }
@@ -69,11 +69,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(
+    name: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = "Hello $name!",
         modifier = modifier
-    )
+    ) //ola
 }
 
 @Preview(showBackground = true)
@@ -82,14 +85,11 @@ fun GreetingPreview() {
     EstadoTheme {
         InicioScreen(
             modifier = Modifier.fillMaxSize(),
-            nombre = "",
+            color = "",
+            colorSeleccionado = "azul",
             listaNombres = emptyList(),
-            nombreModificar = "",
-            onNombreChange = {},
-            onAgregar = {},
-            onModificar = {},
-            onGuardarCambios = {},
-            onEliminar = {}
+            onColorChange = {},
+            onCambiarColor = {}
         )
     }
 }
