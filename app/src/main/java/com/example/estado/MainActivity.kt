@@ -1,3 +1,4 @@
+
 package com.example.estado
 
 import android.os.Bundle
@@ -5,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun InicioScreen(name: String, modifier: Modifier = Modifier) {
+fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -64,14 +64,15 @@ fun InicioScreen(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun InicioPreview() {
-    InicioScreen(
-        modifier = Modifier.fillMaxWidth(),
-        nombre="",
-        listaNombres = emptyList(),
-        onNombreChange = {},
-        onAgregar = {},
-        onEliminar = {}
-
-    )
+fun GreetingPreview() {
+    EstadoTheme {
+        InicioScreen(
+            modifier = Modifier.fillMaxSize(),
+            nombre = "",
+            listaNombres = emptyList(),
+            onNombreChange = {},
+            onAgregar = {},
+            onEliminar = {}
+        )
+    }
 }
