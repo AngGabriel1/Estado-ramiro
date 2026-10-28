@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                             "María",
                             "Pedro"
                         )
-                    }//me falta corregir
+                    }
 
                     InicioScreen(
                         modifier = Modifier
