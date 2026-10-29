@@ -1,47 +1,66 @@
-package screens
+package com.example.estado.Screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.estado.R
+import com.example.estado.Persona
 
 @Composable
-fun MiCard(
+fun InicioScreen(
     modifier: Modifier = Modifier,
     nombre: String,
-    color: String
+    color: String,
+    listaPersonas: List<Persona>,
+    onNombreChange: (String) -> Unit,
+    onColorChange: (String) -> Unit,
+    onAgregar: () -> Unit
 ) {
 
-    val colorFondo = when (color) {
-
-        "rojo" -> colorResource(R.color.rojo)
-
-        "azul" -> colorResource(R.color.azul)
-
-        "verde" -> colorResource(R.color.verde)
-
-        "amarillo" -> colorResource(R.color.amarillo)
-
-        else -> colorResource(R.color.blanco)
-    }
-
-    Row(
+    Column(
         modifier = modifier
-            .fillMaxWidth()
-            .background(colorFondo)
-            .padding(20.dp)
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
 
-        Text(
-            text = nombre,
-            fontSize = 18.sp
+        TextField(
+            value = nombre,
+            onValueChange = onNombreChange,
+            label = {
+                Text("Nombre")
+            }
         )
+
+        TextField(
+            value = color,
+            onValueChange = onColorChange,
+            label = {
+                Text("Color")
+            }
+        )
+
+        Button(
+            onClick = onAgregar
+        ) {
+            Text("Agregar")
+        }
+
+        LazyColumn {
+
+            items(listaPersonas) { persona ->
+
+                MiCard(
+                    nombre = persona.nombre,
+                    color = persona.color
+                )
+            }
+        }
     }
 }

@@ -5,15 +5,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.estado.Screens.InicioScreen
 import com.example.estado.ui.theme.EstadoTheme
-import screens.InicioScreen
+
+data class Persona(
+    val nombre: String,
+    val color: String
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,61 +28,40 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EstadoTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
 
-                    var color by rememberSaveable {
-                        mutableStateOf("")
-                    }
+                var nombre by remember { mutableStateOf("") }
+                var color by remember { mutableStateOf("") }
 
-                    var colorSeleccionado by rememberSaveable {
-                        mutableStateOf("azul")
-                    }
-
-                    val listaNombres = remember {
-                        mutableStateListOf(
-                            "Gabriel",
-                            "Juan",
-                            "María",
-                            "Pedro"
-                        )
-                    }
-
-                    InicioScreen(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-
-                        color = color,
-
-                        colorSeleccionado = colorSeleccionado,
-
-                        listaNombres = listaNombres,
-
-                        onColorChange = {
-                            color = it
-                        },
-
-                        onCambiarColor = {
-                            colorSeleccionado = color
-                        }
-                    )
+                val listaPersonas = remember {
+                    mutableStateListOf<Persona>()
                 }
+
+                InicioScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    nombre = nombre,
+                    color = color,
+                    listaPersonas = listaPersonas,
+                    onNombreChange = {
+                        nombre = it
+                    },
+                    onColorChange = {
+                        color = it
+                    },
+                    onAgregar = {
+                        listaPersonas.add(
+                            Persona(
+                                nombre = nombre,
+                                color = color
+                            )
+                        )
+
+                        nombre = ""
+                        color = ""
+                    }
+                )
             }
         }
     }
-}
-
-@Composable
-fun Greeting(
-    name: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }
 
 @Preview(showBackground = true)
@@ -85,11 +70,12 @@ fun GreetingPreview() {
     EstadoTheme {
         InicioScreen(
             modifier = Modifier.fillMaxSize(),
+            nombre = "",
             color = "",
-            colorSeleccionado = "azul",
-            listaNombres = emptyList(),
+            listaPersonas = emptyList(),
+            onNombreChange = {},
             onColorChange = {},
-            onCambiarColor = {}
+            onAgregar = {}
         )
     }
 }
