@@ -1,47 +1,67 @@
 
 package screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.estado.Persona
 
 @Composable
-fun MiCard(
+fun InicioScreen(
     modifier: Modifier = Modifier,
     nombre: String,
-    color: String
+    color: String,
+    listaPersonas: List<Persona>,
+    onNombreChange: (String) -> Unit,
+    onColorChange: (String) -> Unit,
+    onAgregar: () -> Unit
 ) {
 
-    val colorFondo = when (color) {
-
-        "rojo" -> Color.Red
-
-        "azul" -> Color.Blue
-
-        "verde" -> Color.Green
-
-        "amarillo" -> Color.Yellow
-
-        else -> Color.White
-    }
-
-    Row(
+    Column(
         modifier = modifier
-            .fillMaxWidth()
-            .background(colorFondo)
-            .padding(20.dp)
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
 
-        Text(
-            text = nombre,
-            fontSize = 18.sp
+        TextField(
+            value = nombre,
+            onValueChange = onNombreChange,
+            label = {
+                Text("Nombre")
+            }
         )
+
+        TextField(
+            value = color,
+            onValueChange = onColorChange,
+            label = {
+                Text("Color")
+            }
+        )
+
+        Button(
+            onClick = onAgregar
+        ) {
+            Text("Agregar")
+        }
+
+        LazyColumn {
+
+            items(listaPersonas) { persona ->
+
+                MiCard(
+                    nombre = persona.nombre,
+                    color = persona.color
+                )
+            }
+        }
     }
 }
