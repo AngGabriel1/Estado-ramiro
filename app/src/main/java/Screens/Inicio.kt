@@ -1,4 +1,5 @@
-package com.example.estado.Screens
+
+package screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,12 +24,4 @@ fun MiCard(
         "amarillo" -> colorResource(R.color.amarillo)
         else -> colorResource(R.color.blanco)
     }
-
-    Text(
-        text = nombre,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colorFondo)
-            .padding(20.dp)
-    )
 }

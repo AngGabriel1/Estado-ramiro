@@ -1,4 +1,5 @@
-package com.example.estado.Screens
+
+package screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

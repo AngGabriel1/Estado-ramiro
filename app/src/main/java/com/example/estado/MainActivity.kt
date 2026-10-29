@@ -1,3 +1,4 @@
+
 package com.example.estado
 
 import android.os.Bundle
@@ -62,6 +63,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+fun Greeting(
+    name: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = "Hello $name!",
+        modifier = modifier
+    ) //ola
 }
 
 @Preview(showBackground = true)
