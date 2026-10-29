@@ -18,11 +18,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun InicioScreen(
     modifier: Modifier = Modifier,
-    color: String,
-    colorSeleccionado: String,
-    listaNombres: List<String>,
-    onColorChange: (String) -> Unit,
-    onCambiarColor: () -> Unit
+    numero1: String,
+    numero2: String,
+    resultado: String,
+    onCambiarNumero1: (String) -> Unit,
+    onCambiarNumero2: (String) -> Unit,
+    onCambiarResultado: () -> Unit
 ) {
 
     Column(
@@ -30,11 +31,10 @@ fun InicioScreen(
     ) {
 
         TextField(
-            value = color,
-            onValueChange = onColorChange,
-            modifier = Modifier.fillMaxWidth(),
+            value = numero1,
+            onValueChange = onCambiarNumero1,
             label = {
-                Text("Escribe un color")
+                Text("Numero1")
             }
         )
 
@@ -42,29 +42,27 @@ fun InicioScreen(
             modifier = Modifier.height(10.dp)
         )
 
+        TextField(
+            value = numero2,
+            onValueChange = onCambiarNumero2,
+            label = {
+                Text("Numero2")
+            }
+        )
+
+
         Button(
-            onClick = onCambiarColor,
+            onClick = onCambiarResultado,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cambiar color")
+            Text("Resultado")
         }
 
         Spacer(
             modifier = Modifier.height(20.dp)
         )
 
-        LazyColumn {
 
-            items(listaNombres) { itemNombre ->
 
-                MiCard(
-                    nombre = itemNombre,
-                    color = colorSeleccionado,
-                    modifier = Modifier.padding(
-                        vertical = 4.dp
-                    )
-                )
-            }
-        }
     }
 }

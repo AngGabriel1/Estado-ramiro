@@ -23,47 +23,38 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EstadoTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-
-                    var color by rememberSaveable {
+                    var numero1 by remember {
                         mutableStateOf("")
                     }
 
-                    var colorSeleccionado by rememberSaveable {
-                        mutableStateOf("azul")
+                    var numero2 by remember {
+                        mutableStateOf("")
                     }
 
-                    val listaNombres = remember {
-                        mutableStateListOf(
-                            "Gabriel",
-                            "Juan",
-                            "María",
-                            "Pedro"
-                        )
-                    }//me falta corregir
+                    var resultado by remember {
+                        mutableStateOf("")
+                    }
+
 
                     InicioScreen(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                            .fillMaxSize(),
 
-                        color = color,
+                        numero1 = numero1,
 
-                        colorSeleccionado = colorSeleccionado,
+                        numero2 = numero2,
 
-                        listaNombres = listaNombres,
+                        resultado= resultado,
 
-                        onColorChange = {
-                            color = it
-                        },
+                        onCambiarNumero1 = { numero1 = it },
 
-                        onCambiarColor = {
-                            colorSeleccionado = color
-                        }
+                        onCambiarNumero2 = { numero2 = it},
+
+                        onCambiarResultado = {}
+
                     )
-                }
+
+
             }
         }
     }
@@ -86,11 +77,13 @@ fun GreetingPreview() {
     EstadoTheme {
         InicioScreen(
             modifier = Modifier.fillMaxSize(),
-            color = "",
-            colorSeleccionado = "azul",
-            listaNombres = emptyList(),
-            onColorChange = {},
-            onCambiarColor = {}
+            numero1 = "",
+            numero2= "",
+            resultado = "",
+            onCambiarNumero1 = {},
+            onCambiarNumero2 = {},
+            onCambiarResultado = {}
+
         )
     }
 }
