@@ -6,16 +6,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.estado.Screens.InicioScreen
 import com.example.estado.ui.theme.EstadoTheme
-import kotlin.math.pow
 
 class MainActivity : ComponentActivity() {
 
@@ -27,95 +26,86 @@ class MainActivity : ComponentActivity() {
             EstadoTheme {
 
                 // Variables de estado
-                var numero1 by rememberSaveable {
+                var tablero by remember {
+                    mutableStateOf(List(9) { "" })
+                }
+
+                var jugador by remember {
+                    mutableStateOf("X")
+                }
+
+                var ganador by remember {
                     mutableStateOf("")
                 }
 
-                var numero2 by rememberSaveable {
-                    mutableStateOf("")
+                // Función para verificar si alguien ganó
+                val verificarGanador = { casillas: List<String> ->
+
+                    val combinaciones = listOf(
+                        listOf(0, 1, 2),
+                        listOf(3, 4, 5),
+                        listOf(6, 7, 8),
+                        listOf(0, 3, 6),
+                        listOf(1, 4, 7),
+                        listOf(2, 5, 8),
+                        listOf(0, 4, 8),
+                        listOf(2, 4, 6)
+                    )
+
+                    combinaciones.any { combinacion ->
+                        val a = combinacion[0]
+                        val b = combinacion[1]
+                        val c = combinacion[2]
+
+                        casillas[a].isNotEmpty() &&
+                                casillas[a] == casillas[b] &&
+                                casillas[b] == casillas[c]
+                    }
                 }
 
-                var resultado by rememberSaveable {
-                    mutableStateOf("")
-                }
+                // Función para jugar
+                val onJugar: (Int) -> Unit = { posicion ->
 
-                // Función para realizar las operaciones
-                val calcular: (String) -> Unit = { operacion ->
+                    if (tablero[posicion].isEmpty() &&
+                        ganador.isEmpty()
+                    ) {
 
-                    val n1 = numero1.toDoubleOrNull()
-                    val n2 = numero2.toDoubleOrNull()
+                        val nuevoTablero = tablero.toMutableList()
 
-                    if (n1 == null || n2 == null) {
+                        nuevoTablero[posicion] = jugador
 
-                        resultado = "Ingresa dos números válidos"
+                        tablero = nuevoTablero
 
-                    } else {
+                        if (verificarGanador(tablero)) {
 
-                        val res = when (operacion) {
+                            ganador = jugador
 
-                            "+" -> n1 + n2
+                        } else if (tablero.none { it.isEmpty() }) {
 
-                            "-" -> n1 - n2
+                            ganador = "Empate"
 
-                            "*" -> n1 * n2
+                        } else {
 
-                            "/" -> {
-                                if (n2 != 0.0) {
-                                    n1 / n2
-                                } else {
-                                    null
-                                }
-                            }
-
-                            "%" -> {
-                                if (n2 != 0.0) {
-                                    n1 % n2
-                                } else {
-                                    null
-                                }
-                            }
-
-                            "^" -> n1.pow(n2)
-
-                            else -> null
-                        }
-
-                        resultado = when {
-                            res == null -> "No se puede dividir entre cero"
-
-                            !res.isFinite() -> "Resultado no válido"
-
-                            res % 1.0 == 0.0 -> res.toLong().toString()
-
-                            else -> res.toString()
+                            jugador = if (jugador == "X") "O" else "X"
                         }
                     }
                 }
 
-                // Función para limpiar
-                val limpiar = {
-                    numero1 = ""
-                    numero2 = ""
-                    resultado = ""
+                // Función para reiniciar
+                val reiniciar = {
+                    tablero = List(9) { "" }
+                    jugador = "X"
+                    ganador = ""
                 }
 
-                // Llamamos a la pantalla
+                // Llamamos a InicioScreen
                 InicioScreen(
                     modifier = Modifier.fillMaxSize(),
-                    numero1 = numero1,
-                    numero2 = numero2,
-                    resultado = resultado,
-
-                    onNumero1Change = {
-                        numero1 = it
-                    },
-
-                    onNumero2Change = {
-                        numero2 = it
-                    },
-
-                    onCalcular = calcular,
-                    onLimpiar = limpiar
+                    tablero = tablero,
+                    jugador = jugador,
+                    ganador = ganador,
+                    onJugar = onJugar,
+                    onReiniciar = reiniciar
                 )
             }
         }
@@ -129,13 +119,11 @@ fun GreetingPreview() {
     EstadoTheme {
         InicioScreen(
             modifier = Modifier.fillMaxSize(),
-            numero1 = "",
-            numero2 = "",
-            resultado = "",
-            onNumero1Change = {},
-            onNumero2Change = {},
-            onCalcular = {},
-            onLimpiar = {}
+            tablero = List(9) { "" },
+            jugador = "X",
+            ganador = "",
+            onJugar = {},
+            onReiniciar = {}
         )
     }
 }

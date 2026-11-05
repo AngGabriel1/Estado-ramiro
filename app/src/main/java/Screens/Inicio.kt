@@ -10,28 +10,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun InicioScreen(
     modifier: Modifier = Modifier,
-
-    numero1: String,
-    numero2: String,
-    resultado: String,
-
-    onNumero1Change: (String) -> Unit,
-    onNumero2Change: (String) -> Unit,
-
-    onCalcular: (String) -> Unit,
-    onLimpiar: () -> Unit
+    tablero: List<String>,
+    jugador: String,
+    ganador: String,
+    onJugar: (Int) -> Unit,
+    onReiniciar: () -> Unit
 ) {
 
     Column(
@@ -39,133 +32,112 @@ fun InicioScreen(
             .fillMaxSize()
             .padding(20.dp),
 
-        verticalArrangement = Arrangement.Top
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
         Text(
-            text = "Calculadora"
+            text = "Juego del Gato",
+            fontSize = 30.sp
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Primer número
-        TextField(
-            value = numero1,
-            onValueChange = onNumero1Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Primer número")
+        // Mostrar turno o ganador
+        Text(
+            text = when (ganador) {
+                "Empate" -> "¡Es un empate!"
+                "" -> "Turno del jugador: $jugador"
+                else -> "¡Ganó el jugador $ganador!"
             },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Segundo número
-        TextField(
-            value = numero2,
-            onValueChange = onNumero2Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Segundo número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
+            fontSize = 20.sp
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Primera fila de operaciones
+        // Primera fila
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[0],
+                onClick = { onJugar(0) }
+            )
 
-            Button(
-                onClick = {
-                    onCalcular("+")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("+")
-            }
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[1],
+                onClick = { onJugar(1) }
+            )
 
-            Button(
-                onClick = {
-                    onCalcular("-")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("-")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("*")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("×")
-            }
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[2],
+                onClick = { onJugar(2) }
+            )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Segunda fila de operaciones
+        // Segunda fila
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[3],
+                onClick = { onJugar(3) }
+            )
 
-            Button(
-                onClick = {
-                    onCalcular("/")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("÷")
-            }
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[4],
+                onClick = { onJugar(4) }
+            )
 
-            Button(
-                onClick = {
-                    onCalcular("%")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("%")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("^")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("xʸ")
-            }
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[5],
+                onClick = { onJugar(5) }
+            )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Mostrar resultado
-        MiCard(
-            resultado = resultado
-        )
+        // Tercera fila
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[6],
+                onClick = { onJugar(6) }
+            )
 
-        Spacer(modifier = Modifier.height(15.dp))
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[7],
+                onClick = { onJugar(7) }
+            )
 
-        // Limpiar calculadora
-        OutlinedButton(
-            onClick = onLimpiar,
+            MiCard(
+                modifier = Modifier.weight(1f),
+                valor = tablero[8],
+                onClick = { onJugar(8) }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+        Button(
+            onClick = onReiniciar,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Limpiar")
+            Text("Reiniciar partida")
         }
-
     }
 }
