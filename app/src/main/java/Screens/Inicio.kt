@@ -5,65 +5,152 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
-data class Producto(
-    val nombre: String,
-    val precio: Double
-)
-
 @Composable
-fun CarritoScreen() {
+fun InscripcionScreen() {
 
-    val catalogo = remember {
-        listOf(
-            Producto("Tortillas 1 kg", 24.00),
-            Producto("Leche 1 L", 27.50),
-            Producto("Huevo 12 pz", 52.00),
-            Producto("Frijol 1 kg", 38.00)
+    var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var edad by remember { mutableStateOf("") }
+    var taller by remember { mutableStateOf("Pintura") }
+    var aceptaAviso by remember { mutableStateOf(false) }
+
+    var intentoEnviar by remember { mutableStateOf(false) }
+    var inscrito by remember { mutableStateOf(false) }
+
+    val errorNombre =
+        if (intentoEnviar && nombre.trim().length < 3)
+            "El nombre debe tener al menos 3 caracteres"
+        else null
+
+    val errorCorreo =
+        if (intentoEnviar && !validarCorreo(correo))
+            "Ingresa un correo válido"
+        else null
+
+    val errorEdad =
+        if (intentoEnviar && !validarEdad(edad))
+            "La edad debe estar entre 12 y 99"
+        else null
+
+    val errorAviso =
+        if (intentoEnviar && !aceptaAviso)
+            "Debes aceptar el aviso de privacidad"
+        else null
+
+    if (inscrito) {
+
+        ConfirmacionScreen(
+            nombre = nombre,
+            correo = correo,
+            taller = taller,
+            onNueva = {
+                nombre = ""
+                correo = ""
+                edad = ""
+                taller = "Pintura"
+                aceptaAviso = false
+                intentoEnviar = false
+                inscrito = false
+            }
+        )
+
+    } else {
+
+        InscripcionForm(
+            nombre = nombre,
+            onNombreChange = { nombre = it },
+
+            correo = correo,
+            onCorreoChange = { correo = it },
+
+            edad = edad,
+            onEdadChange = { edad = it },
+
+            taller = taller,
+            onTallerChange = { taller = it },
+
+            aceptaAviso = aceptaAviso,
+            onAceptaAvisoChange = { aceptaAviso = it },
+
+            errorNombre = errorNombre,
+            errorCorreo = errorCorreo,
+            errorEdad = errorEdad,
+            errorAviso = errorAviso,
+
+            onInscribirme = {
+                intentoEnviar = true
+
+                val datosValidos =
+                    nombre.trim().length >= 3 &&
+                            validarCorreo(correo) &&
+                            validarEdad(edad) &&
+                            aceptaAviso
+
+                if (datosValidos) {
+                    inscrito = true
+                }
+            }
         )
     }
+}
 
-    val cantidades = remember {
-        mutableStateListOf(0, 0, 0, 0)
-    }
+fun validarCorreo(correo: String): Boolean {
+    val posicionArroba = correo.indexOf("@")
+    val posicionPunto = correo.indexOf(".", posicionArroba + 1)
 
-    val articulos = cantidades.sum()
+    return posicionArroba > 0 &&
+            posicionPunto > posicionArroba + 1
+}
 
-    val subtotal = catalogo.indices.sumOf {
-        catalogo[it].precio * cantidades[it]
-    }
+fun validarEdad(edad: String): Boolean {
+    val numero = edad.toIntOrNull()
 
-    val descuento = if (subtotal >= 200) {
-        subtotal * 0.10
-    } else {
-        0.0
-    }
+    return numero != null && numero in 12..99
+}
 
-    val subtotalConDescuento = subtotal - descuento
+@Composable
+fun InscripcionForm(
+    nombre: String,
+    onNombreChange: (String) -> Unit,
 
-    val envio = when {
-        articulos == 0 -> 0.0
-        subtotalConDescuento >= 150 -> 0.0
-        else -> 25.0
-    }
+    correo: String,
+    onCorreoChange: (String) -> Unit,
 
-    val total = subtotalConDescuento + envio
+    edad: String,
+    onEdadChange: (String) -> Unit,
+
+    taller: String,
+    onTallerChange: (String) -> Unit,
+
+    aceptaAviso: Boolean,
+    onAceptaAvisoChange: (Boolean) -> Unit,
+
+    errorNombre: String?,
+    errorCorreo: String?,
+    errorEdad: String?,
+    errorAviso: String?,
+
+    onInscribirme: () -> Unit
+) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(24.dp)
     ) {
         if (quizTerminado) {
             Text(
@@ -72,155 +159,222 @@ fun CarritoScreen() {
             )
 
         Text(
-            text = "Carrito Don Pepe",
-            style = MaterialTheme.typography.headlineMedium
+            text = "Inscripción a talleres"
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        catalogo.forEachIndexed { index, producto ->
-
-            ProductoItem(
-                producto = producto,
-                cantidad = cantidades[index],
-                onCantidadChange = { nuevaCantidad ->
-                    cantidades[index] = nuevaCantidad
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        ResumenCarrito(
-            articulos = articulos,
-            subtotal = subtotal,
-            descuento = descuento,
-            envio = envio,
-            total = total
+        CampoTexto(
+            label = "Nombre completo",
+            value = nombre,
+            onValueChange = onNombreChange,
+            error = errorNombre
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Button(
-            onClick = {
-                cantidades.indices.forEach {
-                    cantidades[it] = 0
+        CampoTexto(
+            label = "Correo",
+            value = correo,
+            onValueChange = onCorreoChange,
+            error = errorCorreo,
+            keyboardType = KeyboardType.Email
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        CampoTexto(
+            label = "Edad",
+            value = edad,
+            onValueChange = {
+                if (it.all { caracter -> caracter.isDigit() }) {
+                    onEdadChange(it)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            error = errorEdad,
+            keyboardType = KeyboardType.Number
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TallerDropdown(
+            taller = taller,
+            onTallerChange = onTallerChange
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
         ) {
             Text("Vaciar carrito")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Checkbox(
+                checked = aceptaAviso,
+                onCheckedChange = onAceptaAvisoChange
+            )
+
+            Text(
+                text = "Acepto el aviso de privacidad",
+                modifier = Modifier.padding(top = 12.dp)
+            )
+        }
+
+        if (errorAviso != null) {
+            Text(
+                text = errorAviso
+            )
+        }
+    }
+}
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = {},
-            enabled = articulos > 0,
+            onClick = onInscribirme,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Confirmar pedido")
+            Text("Inscribirme")
         }
     }
 }
 
 @Composable
-fun ProductoItem(
-    producto: Producto,
-    cantidad: Int,
-    onCantidadChange: (Int) -> Unit
+fun CampoTexto(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    error: String?,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
 
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = {
+            Text(label)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        isError = error != null,
+        supportingText = {
+            if (error != null) {
+                Text(error)
+            }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
+        ),
+        singleLine = true
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TallerDropdown(
+    taller: String,
+    onTallerChange: (String) -> Unit
+) {
+
+    var abierto by remember { mutableStateOf(false) }
+
+    val talleres = listOf(
+        "Pintura",
+        "Fotografía",
+        "Guitarra"
+    )
+
+    ExposedDropdownMenuBox(
+        expanded = abierto,
+        onExpandedChange = {
+            abierto = !abierto
+        }
     ) {
 
-        Column(
-            modifier = Modifier.padding(16.dp)
+        OutlinedTextField(
+            value = taller,
+            onValueChange = {},
+            readOnly = true,
+            label = {
+                Text("Taller")
+            },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = abierto
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
+        )
+
+        ExposedDropdownMenu(
+            expanded = abierto,
+            onDismissRequest = {
+                abierto = false
+            }
         ) {
 
-            Text(
-                text = producto.nombre,
-                style = MaterialTheme.typography.titleMedium
-            )
+            talleres.forEach { opcion ->
 
-            Text(
-                text = "$${"%.2f".format(producto.precio)}"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Button(
-                    onClick = {
-                        if (cantidad > 0) {
-                            onCantidadChange(cantidad - 1)
-                        }
+                DropdownMenuItem(
+                    text = {
+                        Text(opcion)
                     },
-                    enabled = cantidad > 0
-                ) {
-                    Text("-")
-                }
-
-                Text(
-                    text = cantidad.toString(),
-                    modifier = Modifier.padding(top = 12.dp)
+                    onClick = {
+                        onTallerChange(opcion)
+                        abierto = false
+                    }
                 )
-
-                Button(
-                    onClick = {
-                        if (cantidad < 10) {
-                            onCantidadChange(cantidad + 1)
-                        }
-                    },
-                    enabled = cantidad < 10
-                ) {
-                    Text("+")
-                }
             }
         }
     }
 }
 
 @Composable
-fun ResumenCarrito(
-    articulos: Int,
-    subtotal: Double,
-    descuento: Double,
-    envio: Double,
-    total: Double
+fun ConfirmacionScreen(
+    nombre: String,
+    correo: String,
+    taller: String,
+    onNueva: () -> Unit
 ) {
 
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
     ) {
 
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Text(
+            text = "¡Inscripción realizada!"
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Nombre: $nombre"
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Correo: $correo"
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Taller: $taller"
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onNueva,
+            modifier = Modifier.fillMaxWidth()
         ) {
-
-            Text(
-                text = "Resumen",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text("Artículos: $articulos")
-            Text("Subtotal: $${"%.2f".format(subtotal)}")
-            Text("Descuento: $${"%.2f".format(descuento)}")
-            Text("Envío: $${"%.2f".format(envio)}")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Total: $${"%.2f".format(total)}",
-                style = MaterialTheme.typography.titleLarge
-            )
+            Text("Nueva inscripción")
         }
     }
 }
