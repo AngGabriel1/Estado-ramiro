@@ -1,171 +1,213 @@
-
 package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
+
+data class Pregunta(
+    val texto: String,
+    val opciones: List<String>,
+    val respuestaCorrecta: Int
+)
+
+private val preguntas = listOf(
+    Pregunta(
+        "¿Cuál es la capital de México?",
+        listOf("Guadalajara", "Ciudad de México", "Monterrey"),
+        1
+    ),
+    Pregunta(
+        "¿Cuántos planetas hay en el sistema solar?",
+        listOf("7", "8", "9"),
+        1
+    ),
+    Pregunta(
+        "¿Cuál es el resultado de 5 × 6?",
+        listOf("25", "30", "35"),
+        1
+    ),
+    Pregunta(
+        "¿Qué lenguaje se utiliza principalmente en Android?",
+        listOf("Kotlin", "PHP", "Swift"),
+        0
+    ),
+    Pregunta(
+        "¿Cuál es el océano más grande?",
+        listOf("Atlántico", "Índico", "Pacífico"),
+        2
+    )
+)
 
 @Composable
-fun InicioScreen(
-    modifier: Modifier = Modifier,
-
-    numero1: String,
-    numero2: String,
-    resultado: String,
-
-    onNumero1Change: (String) -> Unit,
-    onNumero2Change: (String) -> Unit,
-
-    onCalcular: (String) -> Unit,
-    onLimpiar: () -> Unit
-) {
+fun QuizScreen() {
+    var indicePregunta by remember { mutableStateOf(0) }
+    var respuestaSeleccionada by remember { mutableStateOf<Int?>(null) }
+    var puntaje by remember { mutableStateOf(0) }
+    var quizTerminado by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
-
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Center
     ) {
+        if (quizTerminado) {
+            Text(
+                text = "¡Quiz terminado!",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Text(
-            text = "Calculadora"
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Tu puntuación fue: $puntaje de ${preguntas.size}",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-        // Primer número
-        TextField(
-            value = numero1,
-            onValueChange = onNumero1Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Primer número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Segundo número
-        TextField(
-            value = numero2,
-            onValueChange = onNumero2Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Segundo número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Primera fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+            Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    onCalcular("+")
+                    indicePregunta = 0
+                    respuestaSeleccionada = null
+                    puntaje = 0
+                    quizTerminado = false
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("+")
+                Text("Volver a intentar")
+            }
+        } else {
+            val preguntaActual = preguntas[indicePregunta]
+
+            Text(
+                text = "Quiz de cultura general",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Pregunta ${indicePregunta + 1} de ${preguntas.size}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = preguntaActual.texto,
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
 
-            Button(
-                onClick = {
-                    onCalcular("-")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("-")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            preguntaActual.opciones.forEachIndexed { indice, opcion ->
+                OpcionRespuesta(
+                    texto = opcion,
+                    seleccionada = respuestaSeleccionada == indice,
+                    habilitada = respuestaSeleccionada == null,
+                    onSeleccionar = {
+                        respuestaSeleccionada = indice
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
+
+            if (respuestaSeleccionada != null) {
+                val esCorrecta =
+                    respuestaSeleccionada == preguntaActual.respuestaCorrecta
+
+                Text(
+                    text = if (esCorrecta) {
+                        "¡Respuesta correcta!"
+                    } else {
+                        "Respuesta incorrecta"
+                    },
+                    color = if (esCorrecta) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
-                    onCalcular("*")
+                    if (respuestaSeleccionada ==
+                        preguntaActual.respuestaCorrecta
+                    ) {
+                        puntaje++
+                    }
+
+                    if (indicePregunta < preguntas.lastIndex) {
+                        indicePregunta++
+                        respuestaSeleccionada = null
+                    } else {
+                        quizTerminado = true
+                    }
                 },
-                modifier = Modifier.weight(1f)
+                enabled = respuestaSeleccionada != null,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("×")
+                Text(
+                    if (indicePregunta == preguntas.lastIndex) {
+                        "Terminar quiz"
+                    } else {
+                        "Siguiente pregunta"
+                    }
+                )
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Segunda fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    onCalcular("/")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("÷")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("%")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("%")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("^")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("xʸ")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Mostrar resultado
-        MiCard(
-            resultado = resultado
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Limpiar calculadora
-        OutlinedButton(
-            onClick = onLimpiar,
+@Composable
+fun OpcionRespuesta(
+    texto: String,
+    seleccionada: Boolean,
+    habilitada: Boolean,
+    onSeleccionar: () -> Unit
+) {
+    if (seleccionada) {
+        Button(
+            onClick = onSeleccionar,
+            enabled = habilitada,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Limpiar")
+            Text(texto)
         }
-
+    } else {
+        OutlinedButton(
+            onClick = onSeleccionar,
+            enabled = habilitada,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(texto)
+        }
     }
 }
