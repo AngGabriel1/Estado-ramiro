@@ -3,10 +3,10 @@ package com.example.estado.Screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -64,8 +64,8 @@ fun QuizScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Center
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp)
     ) {
         if (quizTerminado) {
             Text(
@@ -73,86 +73,119 @@ fun QuizScreen() {
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Sistema de reseñas",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
-            Text(
-                text = "Tu puntuación fue: $puntaje de ${preguntas.size}",
-                style = MaterialTheme.typography.titleLarge
-            )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
+        Text("Comparte tu opinión y califica tu experiencia.")
 
-            Button(
-                onClick = {
-                    indicePregunta = 0
-                    respuestaSeleccionada = null
-                    puntaje = 0
-                    quizTerminado = false
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver a intentar")
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Escribe tu reseña",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        OutlinedTextField(
+            value = comentario,
+            onValueChange = {
+                comentario = it
+                mensajeError = ""
+            },
+            label = { Text("Tu comentario") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Selecciona tu calificación",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        SelectorEstrellas(
+            calificacion = calificacion,
+            onCalificacionChange = {
+                calificacion = it
+                mensajeError = ""
             }
+        )
+
+        if (mensajeError.isNotEmpty()) {
+            Text(
+                text = mensajeError,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = {
+                if (comentario.isBlank()) {
+                    mensajeError = "Escribe un comentario."
+                } else if (calificacion == 0) {
+                    mensajeError = "Selecciona una calificación."
+                } else {
+                    resenas.add(
+                        Resena(
+                            id = (resenas.maxOfOrNull { it.id } ?: 0) + 1,
+                            comentario = comentario,
+                            calificacion = calificacion
+                        )
+                    )
+
+                    comentario = ""
+                    calificacion = 0
+                    mensajeError = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Publicar reseña")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Resumen de reseñas",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text("Total de reseñas: ${resenas.size}")
+
+        Text(
+            text = "Calificación promedio: ${
+                if (resenas.isEmpty()) "Sin calificaciones"
+                else String.format("%.1f / 5", promedio)
+            }"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Opiniones de los usuarios",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (resenas.isEmpty()) {
+            Text("Todavía no hay reseñas.")
         } else {
-            val preguntaActual = preguntas[indicePregunta]
-
-            Text(
-                text = "Quiz de cultura general",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Pregunta ${indicePregunta + 1} de ${preguntas.size}",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = preguntaActual.texto,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            preguntaActual.opciones.forEachIndexed { indice, opcion ->
-                OpcionRespuesta(
-                    texto = opcion,
-                    seleccionada = respuestaSeleccionada == indice,
-                    habilitada = respuestaSeleccionada == null,
-                    onSeleccionar = {
-                        respuestaSeleccionada = indice
+            resenas.forEach { resena ->
+                ResenaItem(
+                    resena = resena,
+                    onEliminar = {
+                        resenas.remove(resena)
                     }
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
             }
-
-            if (respuestaSeleccionada != null) {
-                val esCorrecta =
-                    respuestaSeleccionada == preguntaActual.respuestaCorrecta
-
-                Text(
-                    text = if (esCorrecta) {
-                        "¡Respuesta correcta!"
-                    } else {
-                        "Respuesta incorrecta"
-                    },
-                    color = if (esCorrecta) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
+        }
+    }
+}
 
             Spacer(modifier = Modifier.height(16.dp))
 
