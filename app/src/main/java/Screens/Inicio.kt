@@ -10,56 +10,48 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-data class Pregunta(
-    val texto: String,
-    val opciones: List<String>,
-    val respuestaCorrecta: Int
-)
-
-private val preguntas = listOf(
-    Pregunta(
-        "¿Cuál es la capital de México?",
-        listOf("Guadalajara", "Ciudad de México", "Monterrey"),
-        1
-    ),
-    Pregunta(
-        "¿Cuántos planetas hay en el sistema solar?",
-        listOf("7", "8", "9"),
-        1
-    ),
-    Pregunta(
-        "¿Cuál es el resultado de 5 × 6?",
-        listOf("25", "30", "35"),
-        1
-    ),
-    Pregunta(
-        "¿Qué lenguaje se utiliza principalmente en Android?",
-        listOf("Kotlin", "PHP", "Swift"),
-        0
-    ),
-    Pregunta(
-        "¿Cuál es el océano más grande?",
-        listOf("Atlántico", "Índico", "Pacífico"),
-        2
-    )
+data class Movimiento(
+    val id: Int,
+    val descripcion: String,
+    val cantidad: Double,
+    val esIngreso: Boolean
 )
 
 @Composable
-fun QuizScreen() {
-    var indicePregunta by remember { mutableStateOf(0) }
-    var respuestaSeleccionada by remember { mutableStateOf<Int?>(null) }
-    var puntaje by remember { mutableStateOf(0) }
-    var quizTerminado by remember { mutableStateOf(false) }
+fun PresupuestoScreen() {
+
+    var descripcion by remember { mutableStateOf("") }
+    var cantidadTexto by remember { mutableStateOf("") }
+    var esIngreso by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf("") }
+
+    val movimientos = remember {
+        mutableStateListOf<Movimiento>()
+    }
+
+    val totalIngresos = movimientos
+        .filter { it.esIngreso }
+        .sumOf { it.cantidad }
+
+    val totalGastos = movimientos
+        .filter { !it.esIngreso }
+        .sumOf { it.cantidad }
+
+    val saldo = totalIngresos - totalGastos
 
     Column(
         modifier = Modifier
@@ -74,7 +66,7 @@ fun QuizScreen() {
             )
 
         Text(
-            text = "Sistema de reseñas",
+            text = "Mi presupuesto",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -84,102 +76,172 @@ fun QuizScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
-            text = "Escribe tu reseña",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        OutlinedTextField(
-            value = comentario,
-            onValueChange = {
-                comentario = it
-                mensajeError = ""
-            },
-            label = { Text("Tu comentario") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Selecciona tu calificación",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        SelectorEstrellas(
-            calificacion = calificacion,
-            onCalificacionChange = {
-                calificacion = it
-                mensajeError = ""
-            }
-        )
-
-        if (mensajeError.isNotEmpty()) {
-            Text(
-                text = mensajeError,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = {
-                if (comentario.isBlank()) {
-                    mensajeError = "Escribe un comentario."
-                } else if (calificacion == 0) {
-                    mensajeError = "Selecciona una calificación."
-                } else {
-                    resenas.add(
-                        Resena(
-                            id = (resenas.maxOfOrNull { it.id } ?: 0) + 1,
-                            comentario = comentario,
-                            calificacion = calificacion
-                        )
-                    )
-
-                    comentario = ""
-                    calificacion = 0
-                    mensajeError = ""
-                }
-            },
+        Card(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Publicar reseña")
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("Saldo disponible")
+                Text(
+                    text = "$${"%.2f".format(saldo)}",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text("Ingresos: $${"%.2f".format(totalIngresos)}")
+                Text("Gastos: $${"%.2f".format(totalGastos)}")
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Resumen de reseñas",
+            text = "Nuevo movimiento",
             style = MaterialTheme.typography.titleLarge
         )
 
-        Text("Total de reseñas: ${resenas.size}")
-
-        Text(
-            text = "Calificación promedio: ${
-                if (resenas.isEmpty()) "Sin calificaciones"
-                else String.format("%.1f / 5", promedio)
-            }"
+        OutlinedTextField(
+            value = descripcion,
+            onValueChange = {
+                descripcion = it
+                error = ""
+            },
+            label = { Text("Descripción") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Opiniones de los usuarios",
-            style = MaterialTheme.typography.titleMedium
+        OutlinedTextField(
+            value = cantidadTexto,
+            onValueChange = {
+                cantidadTexto = it
+                error = ""
+            },
+            label = { Text("Cantidad") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        if (resenas.isEmpty()) {
-            Text("Todavía no hay reseñas.")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = esIngreso,
+                onClick = { esIngreso = true }
+            )
+            Text("Ingreso")
+
+            RadioButton(
+                selected = !esIngreso,
+                onClick = { esIngreso = false }
+            )
+            Text("Gasto")
+        }
+
+        if (error.isNotEmpty()) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Button(
+            onClick = {
+                val cantidad = cantidadTexto.toDoubleOrNull()
+
+                when {
+                    descripcion.isBlank() -> {
+                        error = "Escribe una descripción."
+                    }
+
+                    cantidad == null || cantidad <= 0 -> {
+                        error = "Ingresa una cantidad válida."
+                    }
+
+                    else -> {
+                        movimientos.add(
+                            Movimiento(
+                                id = (movimientos.maxOfOrNull { it.id } ?: 0) + 1,
+                                descripcion = descripcion,
+                                cantidad = cantidad,
+                                esIngreso = esIngreso
+                            )
+                        )
+
+                        descripcion = ""
+                        cantidadTexto = ""
+                        error = ""
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Agregar movimiento")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Historial",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        if (movimientos.isEmpty()) {
+            Text("Todavía no hay movimientos.")
         } else {
-            resenas.forEach { resena ->
-                ResenaItem(
-                    resena = resena,
+            movimientos.forEach { movimiento ->
+                MovimientoItem(
+                    movimiento = movimiento,
                     onEliminar = {
-                        resenas.remove(resena)
+                        movimientos.remove(movimiento)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MovimientoItem(
+    movimiento: Movimiento,
+    onEliminar: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = movimiento.descripcion,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text(
+                    text = if (movimiento.esIngreso) {
+                        "Ingreso: +$${"%.2f".format(movimiento.cantidad)}"
+                    } else {
+                        "Gasto: -$${"%.2f".format(movimiento.cantidad)}"
+                    },
+                    color = if (movimiento.esIngreso) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
                     }
                 )
             }
@@ -189,58 +251,9 @@ fun QuizScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    if (respuestaSeleccionada ==
-                        preguntaActual.respuestaCorrecta
-                    ) {
-                        puntaje++
-                    }
-
-                    if (indicePregunta < preguntas.lastIndex) {
-                        indicePregunta++
-                        respuestaSeleccionada = null
-                    } else {
-                        quizTerminado = true
-                    }
-                },
-                enabled = respuestaSeleccionada != null,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    if (indicePregunta == preguntas.lastIndex) {
-                        "Terminar quiz"
-                    } else {
-                        "Siguiente pregunta"
-                    }
-                )
+            TextButton(onClick = onEliminar) {
+                Text("Eliminar")
             }
-        }
-    }
-}
-
-@Composable
-fun OpcionRespuesta(
-    texto: String,
-    seleccionada: Boolean,
-    habilitada: Boolean,
-    onSeleccionar: () -> Unit
-) {
-    if (seleccionada) {
-        Button(
-            onClick = onSeleccionar,
-            enabled = habilitada,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(texto)
-        }
-    } else {
-        OutlinedButton(
-            onClick = onSeleccionar,
-            enabled = habilitada,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(texto)
         }
     }
 }

@@ -9,7 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.estado.Screens.QuizScreen
+import com.example.estado.Screens.PresupuestoScreen
 import com.example.estado.ui.theme.EstadoTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QuizScreen()
+                    PresupuestoScreen()
                 }
             }
         }
@@ -33,6 +33,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PreviewMain() {
     EstadoTheme {
-        QuizScreen()
+        PresupuestoScreen()
     }
 }
