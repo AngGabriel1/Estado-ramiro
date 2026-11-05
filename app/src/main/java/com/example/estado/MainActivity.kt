@@ -6,10 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.estado.Screens.InscripcionScreen
+import com.example.estado.Screens.LecturaScreen
 import com.example.estado.ui.theme.EstadoTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,10 +19,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             EstadoTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    InscripcionScreen()
+                    LecturaScreen()
                 }
             }
         }
@@ -33,6 +32,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PreviewMain() {
     EstadoTheme {
-        InscripcionScreen()
+        LecturaScreen()
     }
 }
