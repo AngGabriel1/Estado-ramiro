@@ -2,10 +2,8 @@ package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -154,12 +152,17 @@ fun InscripcionForm(
             .fillMaxWidth()
             .padding(24.dp)
     ) {
+        if (quizTerminado) {
+            Text(
+                text = "¡Quiz terminado!",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
         Text(
             text = "Inscripción a talleres"
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         CampoTexto(
             label = "Nombre completo",
@@ -205,6 +208,8 @@ fun InscripcionForm(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
+            Text("Vaciar carrito")
+        }
 
             Checkbox(
                 checked = aceptaAviso,
@@ -222,6 +227,8 @@ fun InscripcionForm(
                 text = errorAviso
             )
         }
+    }
+}
 
         Spacer(modifier = Modifier.height(20.dp))
 
