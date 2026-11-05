@@ -3,7 +3,6 @@ package com.example.estado.Screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -48,13 +47,18 @@ fun LecturaScreen() {
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
+        if (quizTerminado) {
+            Text(
+                text = "¡Quiz terminado!",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
         Text(
             text = "Ajustes de lectura",
             fontSize = 26.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         ControlesLectura(
             tamano = tamano,
@@ -77,7 +81,14 @@ fun LecturaScreen() {
             }
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TallerDropdown(
+            taller = taller,
+            onTallerChange = onTallerChange
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         VistaPrevia(
             texto = "Este es un texto de ejemplo para comprobar cómo se verá la lectura.",
@@ -128,6 +139,8 @@ fun ControlesLectura(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
+            Text("Vaciar carrito")
+        }
 
             Row {
                 RadioButton(
@@ -162,6 +175,8 @@ fun ControlesLectura(
                 Text("Amplio")
             }
         }
+    }
+}
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -169,6 +184,10 @@ fun ControlesLectura(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Text("Inscribirme")
+        }
+    }
+}
 
             Text("Modo oscuro")
 
@@ -199,6 +218,26 @@ fun ControlesLectura(
                 }
             )
         }
+    }
+}
+
+@Composable
+fun ConfirmacionScreen(
+    nombre: String,
+    correo: String,
+    taller: String,
+    onNueva: () -> Unit
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+
+        Text(
+            text = "¡Inscripción realizada!"
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

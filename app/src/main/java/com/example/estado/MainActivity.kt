@@ -13,7 +13,6 @@ import com.example.estado.Screens.LecturaScreen
 import com.example.estado.ui.theme.EstadoTheme
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
