@@ -2,7 +2,6 @@ package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,42 +10,56 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-data class Resena(
-    val id: Int,
-    val comentario: String,
-    val calificacion: Int
+data class Pregunta(
+    val texto: String,
+    val opciones: List<String>,
+    val respuestaCorrecta: Int
+)
+
+private val preguntas = listOf(
+    Pregunta(
+        "¿Cuál es la capital de México?",
+        listOf("Guadalajara", "Ciudad de México", "Monterrey"),
+        1
+    ),
+    Pregunta(
+        "¿Cuántos planetas hay en el sistema solar?",
+        listOf("7", "8", "9"),
+        1
+    ),
+    Pregunta(
+        "¿Cuál es el resultado de 5 × 6?",
+        listOf("25", "30", "35"),
+        1
+    ),
+    Pregunta(
+        "¿Qué lenguaje se utiliza principalmente en Android?",
+        listOf("Kotlin", "PHP", "Swift"),
+        0
+    ),
+    Pregunta(
+        "¿Cuál es el océano más grande?",
+        listOf("Atlántico", "Índico", "Pacífico"),
+        2
+    )
 )
 
 @Composable
-fun ResenasScreen() {
-
-    // Estados principales de la pantalla
-    var comentario by remember { mutableStateOf("") }
-    var calificacion by remember { mutableStateOf(0) }
-    var mensajeError by remember { mutableStateOf("") }
-
-    val resenas = remember {
-        mutableStateListOf<Resena>()
-    }
-
-    val promedio = if (resenas.isNotEmpty()) {
-        resenas.map { it.calificacion }.average()
-    } else {
-        0.0
-    }
+fun QuizScreen() {
+    var indicePregunta by remember { mutableStateOf(0) }
+    var respuestaSeleccionada by remember { mutableStateOf<Int?>(null) }
+    var puntaje by remember { mutableStateOf(0) }
+    var quizTerminado by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -54,6 +67,11 @@ fun ResenasScreen() {
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
+        if (quizTerminado) {
+            Text(
+                text = "¡Quiz terminado!",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
         Text(
             text = "Sistema de reseñas",
@@ -169,24 +187,32 @@ fun ResenasScreen() {
     }
 }
 
-@Composable
-fun SelectorEstrellas(
-    calificacion: Int,
-    onCalificacionChange: (Int) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        for (numero in 1..5) {
-            TextButton(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
                 onClick = {
-                    onCalificacionChange(numero)
-                }
+                    if (respuestaSeleccionada ==
+                        preguntaActual.respuestaCorrecta
+                    ) {
+                        puntaje++
+                    }
+
+                    if (indicePregunta < preguntas.lastIndex) {
+                        indicePregunta++
+                        respuestaSeleccionada = null
+                    } else {
+                        quizTerminado = true
+                    }
+                },
+                enabled = respuestaSeleccionada != null,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = if (numero <= calificacion) "★" else "☆",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    if (indicePregunta == preguntas.lastIndex) {
+                        "Terminar quiz"
+                    } else {
+                        "Siguiente pregunta"
+                    }
                 )
             }
         }
@@ -194,35 +220,27 @@ fun SelectorEstrellas(
 }
 
 @Composable
-fun ResenaItem(
-    resena: Resena,
-    onEliminar: () -> Unit
+fun OpcionRespuesta(
+    texto: String,
+    seleccionada: Boolean,
+    habilitada: Boolean,
+    onSeleccionar: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+    if (seleccionada) {
+        Button(
+            onClick = onSeleccionar,
+            enabled = habilitada,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Calificación: ${"★".repeat(resena.calificacion)}",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(text = resena.comentario)
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = onEliminar) {
-                    Text("Eliminar")
-                }
-            }
+            Text(texto)
+        }
+    } else {
+        OutlinedButton(
+            onClick = onSeleccionar,
+            enabled = habilitada,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(texto)
         }
     }
 }
