@@ -2,11 +2,8 @@ package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -62,11 +59,20 @@ fun PresupuestoScreen() {
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
+        if (quizTerminado) {
+            Text(
+                text = "¡Quiz terminado!",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
         Text(
             text = "Mi presupuesto",
             style = MaterialTheme.typography.headlineMedium
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text("Comparte tu opinión y califica tu experiencia.")
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -239,6 +245,11 @@ fun MovimientoItem(
                     }
                 )
             }
+        }
+    }
+}
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = onEliminar) {
                 Text("Eliminar")
