@@ -1,4 +1,3 @@
-
 package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
@@ -9,163 +8,241 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
+
+data class Movimiento(
+    val id: Int,
+    val descripcion: String,
+    val cantidad: Double,
+    val esIngreso: Boolean
+)
 
 @Composable
-fun InicioScreen(
-    modifier: Modifier = Modifier,
+fun PresupuestoScreen() {
 
-    numero1: String,
-    numero2: String,
-    resultado: String,
+    var descripcion by remember { mutableStateOf("") }
+    var cantidadTexto by remember { mutableStateOf("") }
+    var esIngreso by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf("") }
 
-    onNumero1Change: (String) -> Unit,
-    onNumero2Change: (String) -> Unit,
+    val movimientos = remember {
+        mutableStateListOf<Movimiento>()
+    }
 
-    onCalcular: (String) -> Unit,
-    onLimpiar: () -> Unit
-) {
+    val totalIngresos = movimientos
+        .filter { it.esIngreso }
+        .sumOf { it.cantidad }
+
+    val totalGastos = movimientos
+        .filter { !it.esIngreso }
+        .sumOf { it.cantidad }
+
+    val saldo = totalIngresos - totalGastos
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-
-        verticalArrangement = Arrangement.Top
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp)
     ) {
 
         Text(
-            text = "Calculadora"
+            text = "Mi presupuesto",
+            style = MaterialTheme.typography.headlineMedium
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Primer número
-        TextField(
-            value = numero1,
-            onValueChange = onNumero1Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Primer número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Segundo número
-        TextField(
-            value = numero2,
-            onValueChange = onNumero2Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Segundo número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Primera fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    onCalcular("+")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("+")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("-")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("-")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("*")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("×")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Segunda fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    onCalcular("/")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("÷")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("%")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("%")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("^")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("xʸ")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Mostrar resultado
-        MiCard(
-            resultado = resultado
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Limpiar calculadora
-        OutlinedButton(
-            onClick = onLimpiar,
+        Card(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Limpiar")
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("Saldo disponible")
+                Text(
+                    text = "$${"%.2f".format(saldo)}",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text("Ingresos: $${"%.2f".format(totalIngresos)}")
+                Text("Gastos: $${"%.2f".format(totalGastos)}")
+            }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Nuevo movimiento",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        OutlinedTextField(
+            value = descripcion,
+            onValueChange = {
+                descripcion = it
+                error = ""
+            },
+            label = { Text("Descripción") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = cantidadTexto,
+            onValueChange = {
+                cantidadTexto = it
+                error = ""
+            },
+            label = { Text("Cantidad") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = esIngreso,
+                onClick = { esIngreso = true }
+            )
+            Text("Ingreso")
+
+            RadioButton(
+                selected = !esIngreso,
+                onClick = { esIngreso = false }
+            )
+            Text("Gasto")
+        }
+
+        if (error.isNotEmpty()) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Button(
+            onClick = {
+                val cantidad = cantidadTexto.toDoubleOrNull()
+
+                when {
+                    descripcion.isBlank() -> {
+                        error = "Escribe una descripción."
+                    }
+
+                    cantidad == null || cantidad <= 0 -> {
+                        error = "Ingresa una cantidad válida."
+                    }
+
+                    else -> {
+                        movimientos.add(
+                            Movimiento(
+                                id = (movimientos.maxOfOrNull { it.id } ?: 0) + 1,
+                                descripcion = descripcion,
+                                cantidad = cantidad,
+                                esIngreso = esIngreso
+                            )
+                        )
+
+                        descripcion = ""
+                        cantidadTexto = ""
+                        error = ""
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Agregar movimiento")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Historial",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        if (movimientos.isEmpty()) {
+            Text("Todavía no hay movimientos.")
+        } else {
+            movimientos.forEach { movimiento ->
+                MovimientoItem(
+                    movimiento = movimiento,
+                    onEliminar = {
+                        movimientos.remove(movimiento)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MovimientoItem(
+    movimiento: Movimiento,
+    onEliminar: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = movimiento.descripcion,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text(
+                    text = if (movimiento.esIngreso) {
+                        "Ingreso: +$${"%.2f".format(movimiento.cantidad)}"
+                    } else {
+                        "Gasto: -$${"%.2f".format(movimiento.cantidad)}"
+                    },
+                    color = if (movimiento.esIngreso) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    }
+                )
+            }
+
+            TextButton(onClick = onEliminar) {
+                Text("Eliminar")
+            }
+        }
     }
 }
