@@ -7,189 +7,223 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+data class Resena(
+    val id: Int,
+    val comentario: String,
+    val calificacion: Int
+)
+
 @Composable
-fun LoginScreen() {
+fun ResenasScreen() {
 
-    // Estados principales
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var mostrarContrasena by remember { mutableStateOf(false) }
-    var recordarSesion by remember { mutableStateOf(false) }
+    // Estados principales de la pantalla
+    var comentario by remember { mutableStateOf("") }
+    var calificacion by remember { mutableStateOf(0) }
+    var mensajeError by remember { mutableStateOf("") }
 
-    // Estados de validación y mensaje
-    var errorCorreo by remember { mutableStateOf("") }
-    var errorContrasena by remember { mutableStateOf("") }
-    var mostrarDialogo by remember { mutableStateOf(false) }
+    val resenas = remember {
+        mutableStateListOf<Resena>()
+    }
 
-    fun iniciarSesion() {
-        errorCorreo = ""
-        errorContrasena = ""
-
-        if (correo.isBlank()) {
-            errorCorreo = "Ingresa tu correo electrónico"
-        } else if (!correo.contains("@") || !correo.contains(".")) {
-            errorCorreo = "Ingresa un correo válido"
-        }
-
-        if (contrasena.isBlank()) {
-            errorContrasena = "Ingresa tu contraseña"
-        }
-
-        if (errorCorreo.isEmpty() && errorContrasena.isEmpty()) {
-            mostrarDialogo = true
-        }
+    val promedio = if (resenas.isNotEmpty()) {
+        resenas.map { it.calificacion }.average()
+    } else {
+        0.0
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp)
     ) {
 
         Text(
-            text = "Clínica Vida",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary
+            text = "Sistema de reseñas",
+            style = MaterialTheme.typography.headlineMedium
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Bienvenido. Inicia sesión para continuar."
-        )
+        Text("Comparte tu opinión y califica tu experiencia.")
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Escribe tu reseña",
+            style = MaterialTheme.typography.titleMedium
+        )
 
         OutlinedTextField(
-            value = correo,
+            value = comentario,
             onValueChange = {
-                correo = it
-                errorCorreo = ""
+                comentario = it
+                mensajeError = ""
             },
-            label = { Text("Correo electrónico") },
-            placeholder = { Text("ejemplo@correo.com") },
-            singleLine = true,
-            isError = errorCorreo.isNotEmpty(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
-            ),
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Tu comentario") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3
         )
-
-        if (errorCorreo.isNotEmpty()) {
-            Text(
-                text = errorCorreo,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = contrasena,
-            onValueChange = {
-                contrasena = it
-                errorContrasena = ""
-            },
-            label = { Text("Contraseña") },
-            singleLine = true,
-            isError = errorContrasena.isNotEmpty(),
-            visualTransformation = if (mostrarContrasena) {
-                VisualTransformation.None
-            } else {
-                PasswordVisualTransformation()
-            },
-            trailingIcon = {
-                TextButton(
-                    onClick = {
-                        mostrarContrasena = !mostrarContrasena
-                    }
-                ) {
-                    Text(
-                        if (mostrarContrasena) "Ocultar"
-                        else "Mostrar"
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = "Selecciona tu calificación",
+            style = MaterialTheme.typography.titleMedium
         )
 
-        if (errorContrasena.isNotEmpty()) {
+        SelectorEstrellas(
+            calificacion = calificacion,
+            onCalificacionChange = {
+                calificacion = it
+                mensajeError = ""
+            }
+        )
+
+        if (mensajeError.isNotEmpty()) {
             Text(
-                text = errorContrasena,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                text = mensajeError,
+                color = MaterialTheme.colorScheme.error
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        androidx.compose.foundation.layout.Row(
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = recordarSesion,
-                onCheckedChange = {
-                    recordarSesion = it
-                }
-            )
-
-            Text("Recordar mi sesión")
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
         Button(
-            onClick = { iniciarSesion() },
+            onClick = {
+                if (comentario.isBlank()) {
+                    mensajeError = "Escribe un comentario."
+                } else if (calificacion == 0) {
+                    mensajeError = "Selecciona una calificación."
+                } else {
+                    resenas.add(
+                        Resena(
+                            id = (resenas.maxOfOrNull { it.id } ?: 0) + 1,
+                            comentario = comentario,
+                            calificacion = calificacion
+                        )
+                    )
+
+                    comentario = ""
+                    calificacion = 0
+                    mensajeError = ""
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Iniciar sesión")
+            Text("Publicar reseña")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Resumen de reseñas",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text("Total de reseñas: ${resenas.size}")
+
+        Text(
+            text = "Calificación promedio: ${
+                if (resenas.isEmpty()) "Sin calificaciones"
+                else String.format("%.1f / 5", promedio)
+            }"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Opiniones de los usuarios",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (resenas.isEmpty()) {
+            Text("Todavía no hay reseñas.")
+        } else {
+            resenas.forEach { resena ->
+                ResenaItem(
+                    resena = resena,
+                    onEliminar = {
+                        resenas.remove(resena)
+                    }
+                )
+            }
         }
     }
+}
 
-    if (mostrarDialogo) {
-        AlertDialog(
-            onDismissRequest = {
-                mostrarDialogo = false
-            },
-            title = {
-                Text("¡Bienvenido a Clínica Vida!")
-            },
-            text = {
+@Composable
+fun SelectorEstrellas(
+    calificacion: Int,
+    onCalificacionChange: (Int) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (numero in 1..5) {
+            TextButton(
+                onClick = {
+                    onCalificacionChange(numero)
+                }
+            ) {
                 Text(
-                    "Sesión iniciada correctamente para $correo."
+                    text = if (numero <= calificacion) "★" else "☆",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogo = false
-                    }
-                ) {
-                    Text("Aceptar")
+            }
+        }
+    }
+}
+
+@Composable
+fun ResenaItem(
+    resena: Resena,
+    onEliminar: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Calificación: ${"★".repeat(resena.calificacion)}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(text = resena.comentario)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onEliminar) {
+                    Text("Eliminar")
                 }
             }
-        )
+        }
     }
 }
