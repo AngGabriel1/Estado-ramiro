@@ -1,171 +1,107 @@
-
 package com.example.estado.Screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 
 @Composable
 fun InicioScreen(
     modifier: Modifier = Modifier,
-
-    numero1: String,
-    numero2: String,
-    resultado: String,
-
-    onNumero1Change: (String) -> Unit,
-    onNumero2Change: (String) -> Unit,
-
-    onCalcular: (String) -> Unit,
-    onLimpiar: () -> Unit
+    personasActuales: Int,
+    visitasDelDia: Int,
+    porcentaje: Float,
+    colorIndicador: String,
+    onEntrar: () -> Unit,
+    onSalir: () -> Unit,
+    onCerrarDia: () -> Unit
 ) {
 
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp),
-
-        verticalArrangement = Arrangement.Top
+            .fillMaxWidth()
+            .padding(24.dp)
     ) {
 
         Text(
-            text = "Calculadora"
+            text = "Control de Aforo",
+            style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Primer número
-        TextField(
-            value = numero1,
-            onValueChange = onNumero1Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Primer número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        // Segundo número
-        TextField(
-            value = numero2,
-            onValueChange = onNumero2Change,
-            modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Segundo número")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Primera fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    onCalcular("+")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("+")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("-")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("-")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("*")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("×")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Segunda fila de operaciones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    onCalcular("/")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("÷")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("%")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("%")
-            }
-
-            Button(
-                onClick = {
-                    onCalcular("^")
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("xʸ")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Mostrar resultado
         MiCard(
-            resultado = resultado
+            titulo = "Personas en la sala",
+            contenido = "$personasActuales / 50"
         )
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Limpiar calculadora
-        OutlinedButton(
-            onClick = onLimpiar,
+        MiCard(
+            titulo = "Visitas del día",
+            contenido = visitasDelDia.toString()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Ocupación: ${(porcentaje * 100).toInt()}%"
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LinearProgressIndicator(
+            progress = { porcentaje },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Estado: $colorIndicador"
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            Button(
+                onClick = onEntrar,
+                enabled = personasActuales < 50,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Entra")
+            }
+
+            Button(
+                onClick = onSalir,
+                enabled = personasActuales > 0,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Sale")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onCerrarDia,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Limpiar")
+            Text("Cerrar día")
         }
-
     }
 }

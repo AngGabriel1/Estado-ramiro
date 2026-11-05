@@ -1,4 +1,3 @@
-
 package com.example.estado
 
 import android.os.Bundle
@@ -6,16 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.estado.Screens.InicioScreen
 import com.example.estado.ui.theme.EstadoTheme
-import kotlin.math.pow
+
+const val AFORO_MAX = 50
 
 class MainActivity : ComponentActivity() {
 
@@ -25,117 +24,63 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             EstadoTheme {
-
-                // Variables de estado
-                var numero1 by rememberSaveable {
-                    mutableStateOf("")
-                }
-
-                var numero2 by rememberSaveable {
-                    mutableStateOf("")
-                }
-
-                var resultado by rememberSaveable {
-                    mutableStateOf("")
-                }
-
-                // Función para realizar las operaciones
-                val calcular: (String) -> Unit = { operacion ->
-
-                    val n1 = numero1.toDoubleOrNull()
-                    val n2 = numero2.toDoubleOrNull()
-
-                    if (n1 == null || n2 == null) {
-
-                        resultado = "Ingresa dos números válidos"
-
-                    } else {
-
-                        val res = when (operacion) {
-
-                            "+" -> n1 + n2
-
-                            "-" -> n1 - n2
-
-                            "*" -> n1 * n2
-
-                            "/" -> {
-                                if (n2 != 0.0) {
-                                    n1 / n2
-                                } else {
-                                    null
-                                }
-                            }
-
-                            "%" -> {
-                                if (n2 != 0.0) {
-                                    n1 % n2
-                                } else {
-                                    null
-                                }
-                            }
-
-                            "^" -> n1.pow(n2)
-
-                            else -> null
-                        }
-
-                        resultado = when {
-                            res == null -> "No se puede dividir entre cero"
-
-                            !res.isFinite() -> "Resultado no válido"
-
-                            res % 1.0 == 0.0 -> res.toLong().toString()
-
-                            else -> res.toString()
-                        }
-                    }
-                }
-
-                // Función para limpiar
-                val limpiar = {
-                    numero1 = ""
-                    numero2 = ""
-                    resultado = ""
-                }
-
-                // Llamamos a la pantalla
-                InicioScreen(
+                Surface(
                     modifier = Modifier.fillMaxSize(),
-                    numero1 = numero1,
-                    numero2 = numero2,
-                    resultado = resultado,
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    var personasActuales by remember { mutableStateOf(0) }
+                    var visitasDelDia by remember { mutableStateOf(0) }
 
-                    onNumero1Change = {
-                        numero1 = it
-                    },
+                    val porcentaje =
+                        personasActuales / AFORO_MAX.toFloat()
 
-                    onNumero2Change = {
-                        numero2 = it
-                    },
+                    val colorIndicador = when {
+                        porcentaje < 0.70f -> "Verde"
+                        porcentaje < 1.0f -> "Amarillo"
+                        else -> "Rojo"
+                    }
 
-                    onCalcular = calcular,
-                    onLimpiar = limpiar
-                )
+                    InicioScreen(
+                        modifier = Modifier.padding(),
+                        personasActuales = personasActuales,
+                        visitasDelDia = visitasDelDia,
+                        porcentaje = porcentaje,
+                        colorIndicador = colorIndicador,
+                        onEntrar = {
+                            if (personasActuales < AFORO_MAX) {
+                                personasActuales++
+                                visitasDelDia++
+                            }
+                        },
+                        onSalir = {
+                            if (personasActuales > 0) {
+                                personasActuales--
+                            }
+                        },
+                        onCerrarDia = {
+                            personasActuales = 0
+                            visitasDelDia = 0
+                        }
+                    )
+                }
             }
         }
     }
 }
 
-// Preview
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun PreviewMain() {
     EstadoTheme {
         InicioScreen(
-            modifier = Modifier.fillMaxSize(),
-            numero1 = "",
-            numero2 = "",
-            resultado = "",
-            onNumero1Change = {},
-            onNumero2Change = {},
-            onCalcular = {},
-            onLimpiar = {}
+            modifier = Modifier,
+            personasActuales = 32,
+            visitasDelDia = 45,
+            porcentaje = 32 / AFORO_MAX.toFloat(),
+            colorIndicador = "Verde",
+            onEntrar = {},
+            onSalir = {},
+            onCerrarDia = {}
         )
     }
 }
