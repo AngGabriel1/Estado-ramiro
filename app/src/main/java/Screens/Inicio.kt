@@ -10,54 +10,60 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-data class Movimiento(
-    val id: Int,
-    val descripcion: String,
-    val cantidad: Double,
-    val esIngreso: Boolean
+data class Producto(
+    val nombre: String,
+    val precio: Double
 )
 
 @Composable
-fun PresupuestoScreen() {
+fun CarritoScreen() {
 
-    var descripcion by remember { mutableStateOf("") }
-    var cantidadTexto by remember { mutableStateOf("") }
-    var esIngreso by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf("") }
-
-    val movimientos = remember {
-        mutableStateListOf<Movimiento>()
+    val catalogo = remember {
+        listOf(
+            Producto("Tortillas 1 kg", 24.00),
+            Producto("Leche 1 L", 27.50),
+            Producto("Huevo 12 pz", 52.00),
+            Producto("Frijol 1 kg", 38.00)
+        )
     }
 
-    val totalIngresos = movimientos
-        .filter { it.esIngreso }
-        .sumOf { it.cantidad }
+    val cantidades = remember {
+        mutableStateListOf(0, 0, 0, 0)
+    }
 
-    val totalGastos = movimientos
-        .filter { !it.esIngreso }
-        .sumOf { it.cantidad }
+    val articulos = cantidades.sum()
 
-    val saldo = totalIngresos - totalGastos
+    val subtotal = catalogo.indices.sumOf {
+        catalogo[it].precio * cantidades[it]
+    }
+
+    val descuento = if (subtotal >= 200) {
+        subtotal * 0.10
+    } else {
+        0.0
+    }
+
+    val subtotalConDescuento = subtotal - descuento
+
+    val envio = when {
+        articulos == 0 -> 0.0
+        subtotalConDescuento >= 150 -> 0.0
+        else -> 25.0
+    }
+
+    val total = subtotalConDescuento + envio
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+            .fillMaxWidth()
+            .padding(16.dp)
     ) {
         if (quizTerminado) {
             Text(
@@ -66,194 +72,155 @@ fun PresupuestoScreen() {
             )
 
         Text(
-            text = "Mi presupuesto",
+            text = "Carrito Don Pepe",
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Comparte tu opinión y califica tu experiencia.")
+        catalogo.forEachIndexed { index, producto ->
 
-        Spacer(modifier = Modifier.height(20.dp))
+            ProductoItem(
+                producto = producto,
+                cantidad = cantidades[index],
+                onCantidadChange = { nuevaCantidad ->
+                    cantidades[index] = nuevaCantidad
+                }
+            )
 
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Saldo disponible")
-                Text(
-                    text = "$${"%.2f".format(saldo)}",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text("Ingresos: $${"%.2f".format(totalIngresos)}")
-                Text("Gastos: $${"%.2f".format(totalGastos)}")
-            }
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Nuevo movimiento",
-            style = MaterialTheme.typography.titleLarge
+        ResumenCarrito(
+            articulos = articulos,
+            subtotal = subtotal,
+            descuento = descuento,
+            envio = envio,
+            total = total
         )
 
-        OutlinedTextField(
-            value = descripcion,
-            onValueChange = {
-                descripcion = it
-                error = ""
-            },
-            label = { Text("Descripción") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = cantidadTexto,
-            onValueChange = {
-                cantidadTexto = it
-                error = ""
-            },
-            label = { Text("Cantidad") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = esIngreso,
-                onClick = { esIngreso = true }
-            )
-            Text("Ingreso")
-
-            RadioButton(
-                selected = !esIngreso,
-                onClick = { esIngreso = false }
-            )
-            Text("Gasto")
-        }
-
-        if (error.isNotEmpty()) {
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                val cantidad = cantidadTexto.toDoubleOrNull()
-
-                when {
-                    descripcion.isBlank() -> {
-                        error = "Escribe una descripción."
-                    }
-
-                    cantidad == null || cantidad <= 0 -> {
-                        error = "Ingresa una cantidad válida."
-                    }
-
-                    else -> {
-                        movimientos.add(
-                            Movimiento(
-                                id = (movimientos.maxOfOrNull { it.id } ?: 0) + 1,
-                                descripcion = descripcion,
-                                cantidad = cantidad,
-                                esIngreso = esIngreso
-                            )
-                        )
-
-                        descripcion = ""
-                        cantidadTexto = ""
-                        error = ""
-                    }
+                cantidades.indices.forEach {
+                    cantidades[it] = 0
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Agregar movimiento")
+            Text("Vaciar carrito")
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Historial",
-            style = MaterialTheme.typography.titleLarge
-        )
+        Button(
+            onClick = {},
+            enabled = articulos > 0,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Confirmar pedido")
+        }
+    }
+}
 
-        if (movimientos.isEmpty()) {
-            Text("Todavía no hay movimientos.")
-        } else {
-            movimientos.forEach { movimiento ->
-                MovimientoItem(
-                    movimiento = movimiento,
-                    onEliminar = {
-                        movimientos.remove(movimiento)
-                    }
+@Composable
+fun ProductoItem(
+    producto: Producto,
+    cantidad: Int,
+    onCantidadChange: (Int) -> Unit
+) {
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
+            Text(
+                text = producto.nombre,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = "$${"%.2f".format(producto.precio)}"
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                Button(
+                    onClick = {
+                        if (cantidad > 0) {
+                            onCantidadChange(cantidad - 1)
+                        }
+                    },
+                    enabled = cantidad > 0
+                ) {
+                    Text("-")
+                }
+
+                Text(
+                    text = cantidad.toString(),
+                    modifier = Modifier.padding(top = 12.dp)
                 )
+
+                Button(
+                    onClick = {
+                        if (cantidad < 10) {
+                            onCantidadChange(cantidad + 1)
+                        }
+                    },
+                    enabled = cantidad < 10
+                ) {
+                    Text("+")
+                }
             }
         }
     }
 }
 
 @Composable
-fun MovimientoItem(
-    movimiento: Movimiento,
-    onEliminar: () -> Unit
+fun ResumenCarrito(
+    articulos: Int,
+    subtotal: Double,
+    descuento: Double,
+    envio: Double,
+    total: Double
 ) {
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = movimiento.descripcion,
-                    style = MaterialTheme.typography.titleMedium
-                )
 
-                Text(
-                    text = if (movimiento.esIngreso) {
-                        "Ingreso: +$${"%.2f".format(movimiento.cantidad)}"
-                    } else {
-                        "Gasto: -$${"%.2f".format(movimiento.cantidad)}"
-                    },
-                    color = if (movimiento.esIngreso) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    }
-                )
-            }
-        }
-    }
-}
+            Text(
+                text = "Resumen",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = onEliminar) {
-                Text("Eliminar")
-            }
+            Text("Artículos: $articulos")
+            Text("Subtotal: $${"%.2f".format(subtotal)}")
+            Text("Descuento: $${"%.2f".format(descuento)}")
+            Text("Envío: $${"%.2f".format(envio)}")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Total: $${"%.2f".format(total)}",
+                style = MaterialTheme.typography.titleLarge
+            )
         }
     }
 }
