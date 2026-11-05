@@ -6,250 +6,223 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-data class Tarea(
+data class Resena(
     val id: Int,
-    val nombre: String,
-    val completada: Boolean = false
+    val comentario: String,
+    val calificacion: Int
 )
 
-enum class FiltroTareas {
-    TODAS,
-    PENDIENTES,
-    COMPLETADAS
-}
-
 @Composable
-fun TareasScreen() {
+fun ResenasScreen() {
 
-    var nombreTarea by remember {
-        mutableStateOf("")
+    // Estados principales de la pantalla
+    var comentario by remember { mutableStateOf("") }
+    var calificacion by remember { mutableStateOf(0) }
+    var mensajeError by remember { mutableStateOf("") }
+
+    val resenas = remember {
+        mutableStateListOf<Resena>()
     }
 
-    var tareas by remember {
-        mutableStateOf(listOf<Tarea>())
+    val promedio = if (resenas.isNotEmpty()) {
+        resenas.map { it.calificacion }.average()
+    } else {
+        0.0
     }
-
-    var filtro by remember {
-        mutableStateOf(FiltroTareas.TODAS)
-    }
-
-    var siguienteId by remember {
-        mutableIntStateOf(1)
-    }
-
-    var tareaEliminar by remember {
-        mutableStateOf<Tarea?>(null)
-    }
-
-    val tareasFiltradas = when (filtro) {
-        FiltroTareas.TODAS -> tareas
-        FiltroTareas.PENDIENTES -> tareas.filter { !it.completada }
-        FiltroTareas.COMPLETADAS -> tareas.filter { it.completada }
-    }
-
-    val pendientes = tareas.count { !it.completada }
-    val completadas = tareas.count { it.completada }
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
 
-        Text("Gestor de tareas")
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = nombreTarea,
-            onValueChange = {
-                nombreTarea = it
-            },
-            label = {
-                Text("Nueva tarea")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+        Text(
+            text = "Sistema de reseñas",
+            style = MaterialTheme.typography.headlineMedium
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = {
-                if (nombreTarea.isNotBlank()) {
-                    tareas = tareas + Tarea(
-                        id = siguienteId,
-                        nombre = nombreTarea.trim()
-                    )
+        Text("Comparte tu opinión y califica tu experiencia.")
 
-                    siguienteId++
-                    nombreTarea = ""
-                }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Escribe tu reseña",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        OutlinedTextField(
+            value = comentario,
+            onValueChange = {
+                comentario = it
+                mensajeError = ""
             },
-            enabled = nombreTarea.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Agregar tarea")
-        }
+            label = { Text("Tu comentario") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Total: ${tareas.size}")
-        Text("Pendientes: $pendientes")
-        Text("Completadas: $completadas")
+        Text(
+            text = "Selecciona tu calificación",
+            style = MaterialTheme.typography.titleMedium
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        SelectorEstrellas(
+            calificacion = calificacion,
+            onCalificacionChange = {
+                calificacion = it
+                mensajeError = ""
+            }
+        )
 
-        Text("Filtrar tareas")
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            FilterChip(
-                selected = filtro == FiltroTareas.TODAS,
-                onClick = {
-                    filtro = FiltroTareas.TODAS
-                },
-                label = {
-                    Text("Todas")
-                }
-            )
-
-            FilterChip(
-                selected = filtro == FiltroTareas.PENDIENTES,
-                onClick = {
-                    filtro = FiltroTareas.PENDIENTES
-                },
-                label = {
-                    Text("Pendientes")
-                }
-            )
-
-            FilterChip(
-                selected = filtro == FiltroTareas.COMPLETADAS,
-                onClick = {
-                    filtro = FiltroTareas.COMPLETADAS
-                },
-                label = {
-                    Text("Completadas")
-                }
+        if (mensajeError.isNotEmpty()) {
+            Text(
+                text = mensajeError,
+                color = MaterialTheme.colorScheme.error
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyColumn {
-            items(
-                items = tareasFiltradas,
-                key = { it.id }
-            ) { tarea ->
+        Button(
+            onClick = {
+                if (comentario.isBlank()) {
+                    mensajeError = "Escribe un comentario."
+                } else if (calificacion == 0) {
+                    mensajeError = "Selecciona una calificación."
+                } else {
+                    resenas.add(
+                        Resena(
+                            id = (resenas.maxOfOrNull { it.id } ?: 0) + 1,
+                            comentario = comentario,
+                            calificacion = calificacion
+                        )
+                    )
 
-                TareaItem(
-                    tarea = tarea,
-                    onCambiarEstado = {
-                        tareas = tareas.map {
-                            if (it.id == tarea.id) {
-                                it.copy(
-                                    completada = !it.completada
-                                )
-                            } else {
-                                it
-                            }
-                        }
-                    },
+                    comentario = ""
+                    calificacion = 0
+                    mensajeError = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Publicar reseña")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Resumen de reseñas",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text("Total de reseñas: ${resenas.size}")
+
+        Text(
+            text = "Calificación promedio: ${
+                if (resenas.isEmpty()) "Sin calificaciones"
+                else String.format("%.1f / 5", promedio)
+            }"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Opiniones de los usuarios",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (resenas.isEmpty()) {
+            Text("Todavía no hay reseñas.")
+        } else {
+            resenas.forEach { resena ->
+                ResenaItem(
+                    resena = resena,
                     onEliminar = {
-                        tareaEliminar = tarea
+                        resenas.remove(resena)
                     }
                 )
             }
         }
     }
+}
 
-    if (tareaEliminar != null) {
-
-        AlertDialog(
-            onDismissRequest = {
-                tareaEliminar = null
-            },
-            title = {
-                Text("Eliminar tarea")
-            },
-            text = {
+@Composable
+fun SelectorEstrellas(
+    calificacion: Int,
+    onCalificacionChange: (Int) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (numero in 1..5) {
+            TextButton(
+                onClick = {
+                    onCalificacionChange(numero)
+                }
+            ) {
                 Text(
-                    "¿Estás seguro de que deseas eliminar '${tareaEliminar?.nombre}'?"
+                    text = if (numero <= calificacion) "★" else "☆",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        tareas = tareas.filter {
-                            it.id != tareaEliminar?.id
-                        }
-
-                        tareaEliminar = null
-                    }
-                ) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        tareaEliminar = null
-                    }
-                ) {
-                    Text("Cancelar")
-                }
             }
-        )
+        }
     }
 }
 
 @Composable
-fun TareaItem(
-    tarea: Tarea,
-    onCambiarEstado: () -> Unit,
+fun ResenaItem(
+    resena: Resena,
     onEliminar: () -> Unit
 ) {
-
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 6.dp)
     ) {
-
-        Checkbox(
-            checked = tarea.completada,
-            onCheckedChange = {
-                onCambiarEstado()
-            }
-        )
-
-        Text(
-            text = tarea.nombre,
-            modifier = Modifier.weight(1f)
-        )
-
-        TextButton(
-            onClick = onEliminar
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text("Eliminar")
+            Text(
+                text = "Calificación: ${"★".repeat(resena.calificacion)}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(text = resena.comentario)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onEliminar) {
+                    Text("Eliminar")
+                }
+            }
         }
     }
 }
